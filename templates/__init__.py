@@ -1,5 +1,0 @@
-from console_cpp import console_cpp_template
-from console_vcxproj import vcxproj_template
-from console_vcxproj_filter import filter_template
-from precompiled_hpp import precompiled_hpp_template
-from precompiled_cpp import precompiled_cpp_template

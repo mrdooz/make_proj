@@ -1,13 +1,9 @@
 import argparse
 import uuid
 import os
+import importlib
 
 from Cheetah.Template import Template
-
-from templates import (
-    filter_template, vcxproj_template, console_cpp_template,
-    precompiled_hpp_template, precompiled_cpp_template
-)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--out_dir", help='Output directory', action='store')
@@ -17,12 +13,31 @@ parser.add_argument(
 parser.add_argument('--pch', action='store_true')
 parser.add_argument('--x86', action='store_true')
 parser.add_argument('--x64', action='store_true')
+parser.add_argument(
+    '--msvc', help='MSVC version to generate for', default='vs2015')
+parser.add_argument(
+    '--num', help='Number of entry points', type=int, default=1)
+parser.add_argument(
+    '--alpha', help='Use letters for multiple files', action='store_true')
 parser.add_argument("name")
 args = parser.parse_args()
 
 if not args.x86 and not args.x64:
     print 'Must specify at least one architecture'
     exit(1)
+
+template_dir = 'templates' + '.' + args.msvc
+templates = [
+    'filter_template', 'vcxproj_template', 'console_cpp_template',
+    'precompiled_hpp_template', 'precompiled_cpp_template'
+]
+
+for t in templates:
+    importlib.import_module('templates' + '.' + template_dir + '.', t)
+# from templates_dir import (
+#     filter_template, vcxproj_template, console_cpp_template,
+#     precompiled_hpp_template, precompiled_cpp_template
+# )
 
 uuid.variant = uuid.RESERVED_MICROSOFT
 proj_name = args.name
