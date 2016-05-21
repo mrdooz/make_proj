@@ -2,8 +2,24 @@ import argparse
 import uuid
 import os
 import importlib
-
+import sys
 from Cheetah.Template import Template
+
+filter_template = None
+vcxproj_template = None
+console_cpp_template = None
+precompiled_hpp_template = None
+precompiled_cpp_template = None
+
+templates = [
+    'filter_template', 'vcxproj_template', 'console_cpp_template',
+    'precompiled_hpp_template', 'precompiled_cpp_template'
+]
+
+
+def import_template(msvc, module_name):
+    m = importlib.import_module('templates.' + msvc, module_name)
+    return getattr(m, module_name)
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--out_dir", help='Output directory', action='store')
@@ -26,18 +42,12 @@ if not args.x86 and not args.x64:
     print 'Must specify at least one architecture'
     exit(1)
 
-template_dir = 'templates' + '.' + args.msvc
-templates = [
-    'filter_template', 'vcxproj_template', 'console_cpp_template',
-    'precompiled_hpp_template', 'precompiled_cpp_template'
-]
+# NB, this is a little funky, but depending on the msvc version given, we
+# want to import a different set of template files depending on version.
+this_module = sys.modules[__name__]
 
 for t in templates:
-    importlib.import_module('templates' + '.' + template_dir + '.', t)
-# from templates_dir import (
-#     filter_template, vcxproj_template, console_cpp_template,
-#     precompiled_hpp_template, precompiled_cpp_template
-# )
+    setattr(this_module, t, import_template(args.msvc, t))
 
 uuid.variant = uuid.RESERVED_MICROSOFT
 proj_name = args.name
